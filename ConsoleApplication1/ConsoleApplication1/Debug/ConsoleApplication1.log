@@ -1,0 +1,6 @@
+﻿  ConsoleApplication1.cpp
+C:\Users\adam\Desktop\plik\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.cpp(11,36): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\adam\Desktop\plik\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.cpp(39,31): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\adam\Desktop\plik\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.cpp(44,27): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\adam\Desktop\plik\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.cpp(58,19): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  ConsoleApplication1.vcxproj -> C:\Users\adam\Desktop\plik\ConsoleApplication1\Debug\ConsoleApplication1.exe
