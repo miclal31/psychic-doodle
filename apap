@@ -1,0 +1,171 @@
+
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+#include <cassert>
+
+using namespace std;
+
+enum class Lokalizacja {
+    NA_MASZCIE,
+    NA_DACHU_BUDYNKU,
+    NA_SCIANIE_BUDYNKU,
+    W_POMIESZCZENIU,
+    W_PRZESTROSPCI_OTWARTEJ
+};
+
+const vector<string> lokalizacjaNames = {
+    "na maszcie",
+    "na dachu budynku",
+    "na ścianie budynku",
+    "w pomieszczeniu",
+    "w przestrzeni otwartej"
+};
+
+struct Antena {
+    string nazwa;
+    float dlugosc;
+    float wzmocnienie;
+};
+
+struct Nadajnik {
+    Antena* antena;
+    Lokalizacja lokalizacja;
+    float napiecieAkumulatora;
+    float mocNadajnika;
+    uint16_t licznikKomunikatow;
+
+    Nadajnik(Antena* antena, Lokalizacja lokalizacja, float napiecieAkumulatora, float mocNadajnika, uint16_t licznikKomunikatow) :
+        antena(antena),
+        lokalizacja(lokalizacja),
+        napiecieAkumulatora(napiecieAkumulatora),
+        mocNadajnika(mocNadajnika),
+        licznikKomunikatow(licznikKomunikatow) {}
+};
+
+vector<Antena> antenaTablica = {
+    {"Pretowa", 1.5, 3.5},
+    {"Dipol półfalowy", 2.5, 3.4},
+    {"Dipol ćwierćfalowy", 3.5, 3.6},
+    {"Panelowa", 4.5, 3.5},
+    {"Pretowa", 2.5, 3.4}
+};
+
+Nadajnik* utworzNadajnik(int i) {
+    if (i >= 0 && i < antenaTablica.size()) {
+        return new Nadajnik(&antenaTablica[i], Lokalizacja::NA_DACHU_BUDYNKU, 3.5, 0.05, 1000);
+    }
+    else {
+        throw invalid_argument("Niewlasciwy indeks anteny");
+    }
+}
+
+void wypelnijNadajnik(Nadajnik* n, Lokalizacja l, float na, float mn, uint16_t lk) {
+    if (n != nullptr) {
+        n->lokalizacja = l;
+        n->napiecieAkumulatora = na;
+        n->mocNadajnika = mn;
+        n->licznikKomunikatow = lk;
+    }
+}
+
+void wyswietlNadajnik(Nadajnik* n) {
+    if (n != nullptr) {
+        cout << "Antena: " << n->antena->nazwa << ", Lokalizacja: " << lokalizacjaNames[static_cast<int>(n->lokalizacja)] <<
+            ", Napiecie akumulatora: " << n->napiecieAkumulatora << ", Moc nadajnika: " << n->mocNadajnika <<
+            ", Licznik komunikatow: " << n->licznikKomunikatow << endl;
+    }
+    else {
+        cout << "Nadajnik jest nullem" << endl;
+    }
+}
+
+double obliczSredniaLiczbeKomunikatow(const vector<Nadajnik*>& nadajniki) {
+    int liczbaNadajnikow = nadajniki.size();
+    if (liczbaNadajnikow == 0) {
+        throw invalid_argument("Pusta lista nadajników");
+    }
+    double sredniaLiczbaKomunikatow = 0;
+    for (int i = 0; i < liczbaNadajnikow; i++) {
+        sredniaLiczbaKomunikatow += nadajniki[i]->licznikKomunikatow;
+    }
+    sredniaLiczbaKomunikatow /= liczbaNadajnikow;
+    return sredniaLiczbaKomunikatow;
+}
+
+Nadajnik* nadajnikSredniKomunikat(const vector<Nadajnik*>& nadajniki) {
+    double srednia = obliczSredniaLiczbeKomunikatow(nadajniki);
+    Nadajnik* najblizszy = nullptr;
+    double minOdchylenie = numeric_limits<double>::max();
+
+    for (Nadajnik* nadajnik : nadajniki) {
+        double odchylenie = abs(nadajnik->licznikKomunikatow - srednia);
+        if (odchylenie < minOdchylenie) {
+            najblizszy = nadajnik;
+            minOdchylenie = odchylenie;
+        }
+    }
+
+    assert(najblizszy != nullptr && "Wskaźnik na nadajnik jest nieprawidłowy!");
+
+    if (najblizszy->antena == nullptr) {
+        throw runtime_error("Nadajnik nie ma przypisanej anteny");
+    }
+
+    return najblizszy;
+}
+
+
+void test1() {
+    vector<Nadajnik*> nadajniki = {
+        new Nadajnik(&antenaTablica[0], Lokalizacja::NA_MASZCIE, 3.5, 0.05, 1000),
+        new Nadajnik(&antenaTablica[1], Lokalizacja::NA_DACHU_BUDYNKU, 3.5, 0.05, 500),
+        new Nadajnik(&antenaTablica[2], Lokalizacja::NA_SCIANIE_BUDYNKU, 3.5, 0.05, 1500)
+    };
+    Nadajnik* najblizszy = nadajnikSredniKomunikat(nadajniki);
+    assert(najblizszy->licznikKomunikatow == 1000);
+    cout << "Test 1 przebiegł pomyślnie." << endl;
+    for (auto nadajnik : nadajniki) {
+        delete nadajnik;
+    }
+}
+
+void test2() {
+    vector<Nadajnik*> nadajniki = {
+        new Nadajnik(nullptr, Lokalizacja::W_POMIESZCZENIU, 3.5, 0.05, 1000),
+        new Nadajnik(&antenaTablica[1
+
+], Lokalizacja::NA_DACHU_BUDYNKU, 3.5, 0.05, 500)
+    };
+    try {
+        nadajnikSredniKomunikat(nadajniki);
+     
+        assert(false && "Nieprawidłowy test - oczekiwano wyjątku");
+    }
+    catch (const exception & e) {
+    
+        cout << "Test 2 przebiegł pomyślnie." << endl;
+    }
+    for (auto nadajnik : nadajniki) {
+        delete nadajnik;
+    }
+}
+
+int main() {
+    setlocale(LC_CTYPE, "Polish");
+    try {
+        test1();
+    }
+    catch (const exception & e) {
+        cout << "Test 1 nie powiódł się: " << e.what() << endl;
+    }
+
+    try {
+        test2();
+    }
+    catch (const exception & e) {
+        cout << "Test 2 nie powiódł się: " << e.what() << endl;
+    }
+
+    return 0;
+}
